@@ -1,27 +1,5 @@
-// `timescale 1ns / 1ps
-//////////////////////////////////////////////////////////////////////////////////
-// Company: 
-// Engineer: 
-// 
-// Create Date: 07.11.2024 16:22:36
-// Design Name: 
-// Module Name: CBD_3
-// Project Name: 
-// Target Devices: 
-// Tool Versions: 
-// Description: 
-// 
-// Dependencies: 
-// 
-// Revision:
-// Revision 0.01 - File Created
-// Additional Comments:
-// 
-//////////////////////////////////////////////////////////////////////////////////
-
-
 module CBD_3(
-    input start,
+    
     input clk,
     input reset,
     input [63:0] In,
@@ -41,23 +19,23 @@ module CBD_3(
     
     //FSM setup
     always @(posedge clk or posedge reset)
-        if (reset | !start)
+        if (reset)
         begin
-            address <= 0;
+            address <=-1;
             state <= s0;
         end
         else         
         begin
         case(state)
-                s0:begin if(start)begin state <= s1;  end
+                s0:begin if(!reset && ready )begin state <= s1;  end
                            else state <=s0;
                   end
                     
-                s1:if(ready)state <=s2; else state<=s1;
+                s1: if(ready)state <=s2; else state<=s0;
                 s2:state<=s3;
-                s3:if(ready)state <=s4; else state<=s3;
+                s3: if(ready)state <=s4; else state<=s0;
                 s4 : state <=s5;
-                s5:if(ready)state <=s6; else state<=s5;
+                s5: if(ready)state <=s6; else state<=s0;
                 s6:state<=s7;
                 s7 : state <=s8;
                 s8 : state <=s0;
@@ -78,7 +56,8 @@ module CBD_3(
             s0:begin
                Out <= 47'b0;
                done<=1'b0; 
-               give_bits<=1'b1;  
+               give_bits<=1'b1;
+               address<=address;  
                end
             s1:begin    
                Out <= w1[0];
@@ -143,7 +122,7 @@ endmodule
 
 module CBD_3s( 
     input [23:0] In,
-    output [47:0]Out
+    output  [47:0]Out
     );
       
 genvar i;

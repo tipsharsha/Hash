@@ -8,7 +8,6 @@ CBD_2s, CBD_3s : Use base CBD_4b,CBD_6b units to generate 4 coeff sets for corre
 
 
 module CBD_Super(
-    input start,
     input clk,
     input reset,
     input n, //n = 0 for eta  = 2 mode, and n = 1 for eta = 3 mode
@@ -25,11 +24,12 @@ module CBD_Super(
     wire done2, done3;
     wire give_bits2,give_bits3;
     wire [7 :0] address2, address3;
-    and(s2,~n,start);
-    and(s3,n,start);
+    reg done_64;
+    or(s2,n,reset,done_64);
+    or(s3,~n,reset,done_64);
     
-    CBD_2 c2(s2,clk,reset,In,ready,Out2,done2, give_bits2,address2);
-    CBD_3 c3(s3,clk,reset,In,ready,Out3,done3, give_bits3,address3);
+    CBD_2 c2(clk,s2,In,ready,Out2,done2, give_bits2,address2);
+    CBD_3 c3(clk,s3,In,ready,Out3,done3, give_bits3,address3);
   
   always @(posedge clk)
    begin
@@ -38,13 +38,32 @@ module CBD_Super(
              Out <= Out3;
              done <= done3;
              give_bits <= give_bits3;
-             address <= address3;
+             
+             if(address3 == 7'h3f)
+             begin
+             address<=0;
+             done_64 <=1;
+             end
+             else 
+             begin
+             address<=address3;
+             done_64<=0;
+             end
              end
       1'b0 : begin
              Out <= Out2;
              done <= done2;
              give_bits <= give_bits2;
-             address <= address2;
+             if(address2 == 7'h3f)
+             begin
+             address<=0;
+             done_64 <=1;
+             end
+             else 
+             begin
+             address<=address2;
+             done_64<=0;
+             end
              end
       endcase 
    end  
